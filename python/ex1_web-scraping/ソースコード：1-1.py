@@ -83,9 +83,12 @@ for i in range(0, 50):
     soup = BeautifulSoup(res.content, 'html.parser')
 
     #店名を表示
-    title = soup.title.text
-    tenmei = title.split(' - ')[0]
-    print(tenmei)
+    names = soup.find_all('p', class_='fn org summary')
+    if names:
+        name = names[0].text
+        print(name)
+    else:
+        print("")
 
     #電話番号を表示
     phone_numbers = soup.find_all('span', class_='number')
@@ -138,7 +141,7 @@ for i in range(0, 50):
     ssl=[]
     print(ssl)
 
-    lists[i] = [tenmei, phone_number, email, ken, city, address, building, url, ssl]
+    lists[i] = [name, phone_number, email, ken, city, address, building, url, ssl]
 
 
 #CSVファイルに書き込む

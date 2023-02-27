@@ -1,4 +1,5 @@
 # モジュールのインポート
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -146,3 +147,8 @@ with open('成果物：1-1.csv', mode='w', encoding='utf-8', newline='') as f:
     writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県', '市区町村', '番地', '建物名', 'URL', 'SSL'])
     for j in range(50):
         writer.writerow(lists[j])  
+
+#dataframe形式で表示
+df = pd.read_csv('成果物：1-1.csv', index_col=0)
+
+print(df)

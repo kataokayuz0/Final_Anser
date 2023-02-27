@@ -8,6 +8,8 @@ import time
 #大阪府を対象に調査
 # HTMLデータの取得(1ページ目)
 time.sleep(3)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
 res = requests.get(
     'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B')
 soup = BeautifulSoup(res.content, 'html.parser')
@@ -22,6 +24,8 @@ for link in links:
 
 # HTMLデータの取得(2ページ目)
 time.sleep(3)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
 res = requests.get(
     'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=2')
 soup = BeautifulSoup(res.content, 'html.parser')
@@ -35,6 +39,8 @@ for link in links:
 
 # HTMLデータの取得(3ページ目)
 time.sleep(3)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
 res = requests.get(
     'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=3')
 soup = BeautifulSoup(res.content, 'html.parser')
@@ -51,6 +57,8 @@ for link in links:
 
 # HTMLデータの取得(4ページ目)
 time.sleep(3)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
 res = requests.get(
     'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=4')
 soup = BeautifulSoup(res.content, 'html.parser')

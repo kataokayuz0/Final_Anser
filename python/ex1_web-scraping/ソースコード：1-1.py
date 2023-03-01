@@ -50,11 +50,11 @@ soup = BeautifulSoup(res.content, 'html.parser')
 links = soup.find_all('a', class_="style_titleLink__oiHVJ")
 for link in links:
     href = link.get('href')
+# 50店舗で停止
+    if (len(linkslist) == 50):
+        break
     if (href and href not in linkslist):
         linkslist.append(href)
-#50店舗で停止        
-    if(len(linkslist)==50):
-        break  
 
 # HTMLデータの取得(4ページ目)
 time.sleep(3)
@@ -75,7 +75,7 @@ for link in links:
         linkslist.append(href)
 
 
-lists = [[] for i in range(50)]
+lists = [[] for _ in range(50)]
 
 #リストのurlから情報を取得
 for i in range(0, 50):

@@ -76,7 +76,7 @@ for i in range(0, len(linkslist)):
     email=[]
     print(email)
 
-    #都道府県を表示
+    # 都道府県を表示
     kens = soup.find('span', class_='region')
     if kens:
         address = kens.text
@@ -92,24 +92,26 @@ for i in range(0, len(linkslist)):
 
     # 市区町村を表示
     if kens:
-        address2 = kens.text
+        address2 = kens.text.replace(ken, '')
         pattern = r'^.+?[市区町村]'
         match = re.match(pattern, address2)
         if match:
             city = match.group()
         else:
-            print("都道府県名が見つかりませんでした。")
-        city = city.replace(ken, '')
+            print("市区町村名が見つかりませんでした。")
         print(city)
-    else:
-        print("")
-    
-    #番地を表示
-    if kens:
-        address = kens.text.replace(ken, '').replace(city, '')
+
+        # 番地を表示
+        pattern = r'[^\d]*(\d+.*)'
+        match = re.match(pattern, address2.replace(city, ''))
+        if match:
+            address = match.group(1)
+        else:
+            print("番地が見つかりませんでした。")
         print(address)
     else:
         print("")
+
 
     #建物名を表示
     buildings = soup.find('span', class_='locality')

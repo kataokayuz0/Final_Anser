@@ -6,94 +6,68 @@ import re
 import csv
 import time
 
-#大阪府を対象に調査
-# HTMLデータの取得(1ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-res = requests.get(
-    'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B')
-soup = BeautifulSoup(res.content, 'html.parser')
+# 検索キーワードをユーザから入力する
+freeword = input('検索フリーワードを入力してください：')
 
-# 全ての<a>要素を取得し、href属性の値を取得する
+# 取得した店舗数
+count = 0
+
+# 検索URLのテンプレート
+url_template = 'https://r.gnavi.co.jp/area/jp/rs/?fw={}&p={}'
+
+# ページ番号
+page = 1
+
+# 店舗のURLを格納するリスト
 linkslist = []
-links = soup.find_all('a', class_="style_titleLink__oiHVJ")
-for link in links:
-    href = link.get('href')
-    if (href and href not in linkslist):
-        linkslist.append(href)
 
-# HTMLデータの取得(2ページ目)
-time.sleep(3)
+#ユーザーエージェントの指定
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-res = requests.get(
-    'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=2')
+# 検索URL
+url = url_template.format(freeword, page)
+time.sleep(5)
+# リクエストを送信
+res = requests.get(url)
+# レスポンスからHTMLを抽出
 soup = BeautifulSoup(res.content, 'html.parser')
 
-# 全ての<a>要素を取得し、href属性の値を取得する
-links = soup.find_all('a', class_="style_titleLink__oiHVJ")
-for link in links:
-    href = link.get('href')
-    if (href and href not in linkslist):
-        linkslist.append(href)
 
-# HTMLデータの取得(3ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-res = requests.get(
-    'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=3')
-soup = BeautifulSoup(res.content, 'html.parser')
+while len(linkslist) < 50:
+    # 全ての<a>要素を取得し、href属性の値を取得する
+    links = soup.find_all('a', class_="style_titleLink__oiHVJ")
+    for link in links:
+        href = link.get('href')
+        if (href and href not in linkslist and len(linkslist) < 50):
+            linkslist.append(href)
 
-# 全ての<a>要素を取得し、href属性の値を取得する
-links = soup.find_all('a', class_="style_titleLink__oiHVJ")
-for link in links:
-    href = link.get('href')
-# 50店舗で停止
-    if (len(linkslist) == 50):
-        break
-    if (href and href not in linkslist):
-        linkslist.append(href)
+    page += 1
+    # 検索URL
+    url = url_template.format(freeword, page)
+    time.sleep(5)
+    # リクエストを送信
+    res = requests.get(url)
+    # レスポンスからHTMLを抽出
+    soup = BeautifulSoup(res.content, 'html.parser')
 
-# HTMLデータの取得(4ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-res = requests.get(
-    'https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=4')
-soup = BeautifulSoup(res.content, 'html.parser')
-
-# 全ての<a>要素を取得し、href属性の値を取得する
-links = soup.find_all('a', class_="style_titleLink__oiHVJ")
-for link in links:
-    href = link.get('href')
-    # 50店舗で停止
-    if (len(linkslist) == 50):
-        break
-    if (href and href not in linkslist):
-        linkslist.append(href)
-
-
-lists = [[] for _ in range(50)]
-
+lists = [[] for _ in range(len(linkslist))]
 #リストのurlから情報を取得
-for i in range(0, 50):
+for i in range(0, len(linkslist)):
     res = requests.get(linkslist[i])
     soup = BeautifulSoup(res.content, 'html.parser')
 
     #店名を表示
-    names = soup.find_all('p', class_='fn org summary')
+    names = soup.find('p', class_='fn org summary')
     if names:
-        name = names[0].text
+        name = names.text
         print(name)
     else:
         print("")
 
     #電話番号を表示
-    phone_numbers = soup.find_all('span', class_='number')
+    phone_numbers = soup.find('span', class_='number')
     if phone_numbers:
-        phone_number = phone_numbers[0].text
+        phone_number = phone_numbers.text
         print(phone_number)
     else:
         print("")
@@ -103,35 +77,48 @@ for i in range(0, 50):
     print(email)
 
     #都道府県を表示
-    kens = soup.find_all('span', class_='region')
+    kens = soup.find('span', class_='region')
     if kens:
-        ken = kens[0].text[:3]
+        address = kens.text
+        pattern = r'^.+?[都道府県]'
+        match = re.match(pattern, address)
+        if match:
+            ken = match.group()
+        else:
+            print("都道府県名が見つかりませんでした。")
         print(ken)
     else:
         print("")
 
     # 市区町村を表示
     if kens:
-        city = kens[0].text[3:]
-        city = re.sub(r'\d|-', '', city)
+        address2 = kens.text
+        pattern = r'^.+?[市区町村]'
+        match = re.match(pattern, address2)
+        if match:
+            city = match.group()
+        else:
+            print("都道府県名が見つかりませんでした。")
+        city = city.replace(ken, '')
         print(city)
     else:
         print("")
     
     #番地を表示
     if kens:
-        address = kens[0].text.replace(ken, '').replace(city, '')
+        address = kens.text.replace(ken, '').replace(city, '')
         print(address)
     else:
         print("")
 
     #建物名を表示
-    buildings = soup.find_all('span', class_='locality')
+    buildings = soup.find('span', class_='locality')
     if buildings:
-        building = buildings[0].text
+        building = buildings.text
         print(building)
     else:
-        print("")
+        building =""
+        print(building)
 
     #URLを表示
     url=[]
@@ -141,17 +128,20 @@ for i in range(0, 50):
     ssl=[]
     print(ssl)
 
-    lists[i] = [name, phone_number, email, ken, city, address, building, url, ssl]
+    lists[i] = [name, phone_number, email, ken, city,
+                address, building, url, ssl]
 
 
-#CSVファイルに書き込む
+# CSVファイルに書き込む
 with open('成果物：1-1.csv', mode='w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県', '市区町村', '番地', '建物名', 'URL', 'SSL'])
-    for j in range(50):
-        writer.writerow(lists[j])  
+    writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県',
+                    '市区町村', '番地', '建物名', 'URL', 'SSL'])
 
-#dataframe形式で表示
+    for j in range(len(linkslist)):
+        writer.writerow(lists[j])
+
+# dataframe形式で表示
 df = pd.read_csv('成果物：1-1.csv', index_col=0)
 
 print(df)

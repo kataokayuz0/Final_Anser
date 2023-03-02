@@ -7,7 +7,7 @@ import csv
 import time
 
 # 検索キーワードをユーザから入力する
-freeword = input('検索フリーワードを入力してください：')
+freeword = input('県名などの検索フリーワードを入力してください：')
 
 # 取得した店舗数
 count = 0
@@ -23,7 +23,8 @@ linkslist = []
 
 #ユーザーエージェントの指定
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+    'Referer': 'https://www.google.com/'}
 # 検索URL
 url = url_template.format(freeword, page)
 time.sleep(5)
@@ -90,27 +91,28 @@ for i in range(0, len(linkslist)):
     else:
         print("")
 
-    # 市区町村を表示
+    # 番地を表示
     if kens:
         address2 = kens.text.replace(ken, '')
-        pattern = r'^.+?[市区町村]'
-        match = re.match(pattern, address2)
+        pattern = r'[\d-]+'
+        match = re.search(pattern, address2)
         if match:
-            city = match.group()
-        else:
-            print("市区町村名が見つかりませんでした。")
-        print(city)
-
-        # 番地を表示
-        pattern = r'[^\d]*(\d+.*)'
-        match = re.match(pattern, address2.replace(city, ''))
-        if match:
-            address = match.group(1)
+            address = match.group()
         else:
             print("番地が見つかりませんでした。")
+    else:
+        print("")
+
+    # 市区町村を表示
+    if kens:
+        city = kens.text.replace(ken, '').replace(address, '')
+        print(city)
         print(address)
     else:
         print("")
+
+
+
 
 
     #建物名を表示

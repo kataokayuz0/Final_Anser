@@ -137,9 +137,11 @@ for i in range(0, len(linkslist)):
         city = kens_str.replace(ken, '').replace(address, '')
         print(city)
         if address:
+            address = '="{0}"'.format(address)
             print(address)
         else:
-            print("")
+            address = ""
+            print(address)
     else:
         print("")
 
@@ -198,7 +200,7 @@ for i in range(0, len(linkslist)):
                 address, building, page_url, has_ssl_certificate]
 
 # CSVファイルに書き込む
-with open('成果物：1-2.csv', mode='w', encoding='utf-8', newline='') as f:
+with open('成果物：1-2.csv', mode='w', encoding='cp932', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県',
                     '市区町村', '番地', '建物名', 'URL', 'SSL'])
@@ -207,7 +209,7 @@ with open('成果物：1-2.csv', mode='w', encoding='utf-8', newline='') as f:
         writer.writerow(lists[j])
 
 # dataframe形式で表示
-df = pd.read_csv('成果物：1-2.csv', index_col=0)
+df = pd.read_csv('成果物：1-2.csv', encoding='cp932', index_col=0)
 
 print(df)
 

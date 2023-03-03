@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import csv
 import time
+import unicodedata
 
 # 検索キーワードをユーザから入力する
 freeword = input('県名などの検索フリーワードを入力してください：')
@@ -90,8 +91,9 @@ for i in range(0, len(linkslist)):
 
     # 番地を表示
     if kens:
-        address2 = kens.text.replace(ken, '')
-        pattern = r'[\d-]+'
+        kens_str = ''.join(kens)
+        address2 = kens_str.replace(ken, '')
+        pattern = r'[\d－-]+'
         match = re.search(pattern, address2)
         if match:
             address = match.group()
@@ -102,9 +104,16 @@ for i in range(0, len(linkslist)):
 
     # 市区町村を表示
     if kens:
-        city = kens.text.replace(ken, '').replace(address, '')
+        kens_str = ''.join(kens)
+        address_str = ''.join(address)
+        city = kens_str.replace(ken, '').replace(address, '')
         print(city)
-        print(address)
+        if address:
+            address = '="{0}"'.format(address)
+            print(address)
+        else:
+            address = ""
+            print(address)
     else:
         print("")
 
@@ -129,20 +138,21 @@ for i in range(0, len(linkslist)):
     ssl=[]
     print(ssl)
 
-    lists[i] = [name, phone_number, email, ken, city,
-                address, building, url, ssl]
+    lists[i] = [name, phone_number, "", ken, city,
+                address, building]
 
 
 # CSVファイルに書き込む
-with open('成果物：1-1.csv', mode='w', encoding='utf-8', newline='') as f:
+with open('成果物：1-1.csv', mode='w', encoding='cp932', errors='ignore', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県',
                     '市区町村', '番地', '建物名', 'URL', 'SSL'])
 
     for j in range(len(linkslist)):
+        # CSVファイルに書き込む
         writer.writerow(lists[j])
 
 # dataframe形式で表示
-df = pd.read_csv('成果物：1-1.csv', index_col=0)
+df = pd.read_csv('成果物：1-1.csv', encoding='cp932', index_col=0)
 
 print(df)

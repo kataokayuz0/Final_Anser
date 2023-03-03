@@ -139,7 +139,7 @@ for i in range(0, len(linkslist)):
     print(ssl)
 
     lists[i] = [name, phone_number, "", ken, city,
-                address, building]
+                address, building, "", ""]
 
 
 # CSVファイルに書き込む

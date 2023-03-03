@@ -9,9 +9,6 @@ import time
 # 検索キーワードをユーザから入力する
 freeword = input('県名などの検索フリーワードを入力してください：')
 
-# 取得した店舗数
-count = 0
-
 # 検索URLのテンプレート
 url_template = 'https://r.gnavi.co.jp/area/jp/rs/?fw={}&p={}'
 

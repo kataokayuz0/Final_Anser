@@ -8,86 +8,72 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 import ssl
 import socket
 from urllib.parse import urlparse
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 options = Options()
-options.add_argument('--headless')
+options.add_argument('--headless')  # ヘッドレスモードで実行する
+options.add_argument('--disable-site-isolation-trials')
 driver_path = ChromeDriverManager().install()
 browser = webdriver.Chrome(executable_path=driver_path, options=options)
 
-# 大阪府の居酒屋を対象に調査
-# HTMLデータの取得(1ページ目)
+
+
 time.sleep(3)
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-browser.get('https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B')
+browser.get('https://www.gnavi.co.jp/')
 
-# 全ての<a>要素を取得し、href属性の値を取得する
+# 検索ボックスを特定し、入力する文字列を指定する
+area = input('エリアを入力してください：')
+wait = WebDriverWait(browser, 20)
+search_box = wait.until(
+    EC.presence_of_element_located((By.ID, 'js-suggest-area')))
+search_box.send_keys(area)
+
+#検索を実行する
+button = WebDriverWait(browser, 5).until(
+    EC.element_to_be_clickable((By.CLASS_NAME, "js-search")))
+button.click()
+current_url = browser.current_url
+
+#店舗のurlを格納するリスト
 linkslist = []
-links = browser.find_elements(By.CSS_SELECTOR, "a.style_titleLink__oiHVJ")
-for link in links:
-    href = link.get_attribute('href')
-    if (href and href not in linkslist):
-        linkslist.append(href)
-
-# HTMLデータの取得(2ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-browser.get('https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=2')
 
 # 全ての<a>要素を取得し、href属性の値を取得する
-links = browser.find_elements(By.CSS_SELECTOR, "a.style_titleLink__oiHVJ")
-for link in links:
-    href = link.get_attribute('href')
-    if (href and href not in linkslist):
-        linkslist.append(href)
+r = 2
+while len(linkslist) < 50:
+    time.sleep(3)
+    links = browser.find_elements(By.CSS_SELECTOR, "a.style_titleLink__oiHVJ")
+    for link in links:
+        href = link.get_attribute('href')
+        if (href and href not in linkslist and len(linkslist) < 50):
+            linkslist.append(href)
 
-# HTMLデータの取得(3ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-browser.get('https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=3')
-
-# 全ての<a>要素を取得し、href属性の値を取得する
-links = browser.find_elements(By.CSS_SELECTOR, "a.style_titleLink__oiHVJ")
-for link in links:
-    href = link.get_attribute('href')
-# 50店舗で停止
-    if (len(linkslist) == 50):
-        break
-    if (href and href not in linkslist):
-        linkslist.append(href)
+    # 次のページに移動 
+    new_url = "{}&p={}".format(current_url, r)
+    r = r + 1
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
+    browser.get(new_url)
 
 
-# HTMLデータの取得(4ページ目)
-time.sleep(3)
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-browser.get('https://r.gnavi.co.jp/area/aream3102/rs/?date=20230307&time=1900&people=2&fw=%E5%B1%85%E9%85%92%E5%B1%8B&p=4')
-
-# 全ての<a>要素を取得し、href属性の値を取得する
-links = browser.find_elements(By.CSS_SELECTOR, "a.style_titleLink__oiHVJ")
-for link in links:
-    href = link.get_attribute('href')
-    # 50店舗で停止
-    if (len(linkslist) == 50):
-        break
-    if (href and href not in linkslist):
-        linkslist.append(href)
 
 print(linkslist)
-lists = [[] for _ in range(50)]
+print(len(linkslist))
+lists = [[] for _ in range(len(linkslist))]
 
 # リストのurlから情報を取得
 # Chrome WebDriverを初期化
 options = Options()
 options.add_argument('--headless')  # ヘッドレスモードで実行する
-browser = webdriver.Chrome(options=options)
-for i in range(0, 50):
+options.add_argument('--disable-site-isolation-trials')
+browser = webdriver.Chrome(executable_path=driver_path, options=options)
+for i in range(0, len(linkslist)):
     browser.get(linkslist[i])
 
     # 店名を表示
@@ -120,26 +106,40 @@ for i in range(0, 50):
     kens = browser.find_elements(By.CLASS_NAME, "region")
     kens = [element.text for element in kens]
     if kens:
-        ken = kens[0][:3]
+        address = kens[0]
+        pattern = r'^.+?[都道府県]'
+        match = re.match(pattern, address)
+        if match:
+            ken = match.group()
+        else:
+            print("都道府県名が見つかりませんでした。")
         print(ken)
-    else:
-        print("")
-
-    # 市区町村を表示
-    if kens:
-        kens_str = kens[0]
-        city = kens_str[3:]
-        city = re.sub(r'\d|-', '', city)
-        print(city)
     else:
         print("")
 
     # 番地を表示
     if kens:
         kens_str = ''.join(kens)
-        city_str = ''.join(city)
-        address = kens_str.replace(ken, '').replace(city_str, '')
-        print(address)
+        address2 = kens_str.replace(ken, '')
+        pattern = r'[\d－-]+'
+        match = re.search(pattern, address2)
+        if match:
+            address = match.group()
+        else:
+            print("番地が見つかりませんでした。")
+    else:
+        print("")
+
+    # 市区町村を表示
+    if kens:
+        kens_str = ''.join(kens)
+        address_str = ''.join(address)
+        city = kens_str.replace(ken, '').replace(address, '')
+        print(city)
+        if address:
+            print(address)
+        else:
+            print("")
     else:
         print("")
 
@@ -154,9 +154,16 @@ for i in range(0, 50):
 
     # ページのURLを取得
     try:
-        element = browser.find_element(By.CLASS_NAME, 'url')
-        page_url = element.get_attribute('href')
-        print(page_url)
+        elements = browser.find_elements(
+            By.XPATH, '//a[@title="オフィシャルページ"]')[0]
+        if elements:
+            page_url = elements.get_attribute("href")
+            print(page_url)
+        else:
+            page_url = ""
+            has_ssl_certificate = ""
+            print(page_url)
+            print(has_ssl_certificate)
         browser.get(page_url)
         parsed_url = urlparse(page_url)
         addrinfo = socket.getaddrinfo(
@@ -195,7 +202,8 @@ with open('成果物：1-2.csv', mode='w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['店舗名', '電話番号', 'メールアドレス', '都道府県',
                     '市区町村', '番地', '建物名', 'URL', 'SSL'])
-    for j in range(50):
+
+    for j in range(len(linkslist)):
         writer.writerow(lists[j])
 
 # dataframe形式で表示
